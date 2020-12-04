@@ -9,7 +9,8 @@ const {
 	crearUsuario,
 	login,
 	renewToken,
-	googleAuth
+	googleAuth,
+	loginFirebase
 } = require('../controllers/auth');
 const {validarCampos} = require('../middlewares/validar-campos');
 const {validarJWT} = require('../middlewares/validar-jwt');
@@ -39,5 +40,7 @@ router.post(
 router.get('/renew', validarJWT, renewToken);
 
 router.post('/google', googleAuth);
+
+router.post('/firebase', loginFirebase);
 
 module.exports = router;

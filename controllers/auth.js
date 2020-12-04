@@ -1,5 +1,8 @@
 const {response} = require('express');
+var admin = require('firebase-admin');
 const bcrypt = require('bcryptjs');
+
+var adminFire = admin.initializeApp();
 
 const Usuario = require('../models/usuario');
 const {generarJWT} = require('../helpers/jwt');
@@ -81,6 +84,47 @@ const login = async (req, res = response) => {
 	}
 };
 
+const loginFirebase = async (req, res = response) => {
+	const {token} = req.body;
+
+	try {
+		const userFire = await adminFire.auth().verifyIdToken(token);
+		console.log(userFire);
+
+		/* const usuarioDB = await Usuario.findOne({email});
+		if (!usuarioDB) {
+			return res.status(404).json({
+				ok: false,
+				msg: 'Email no encontrado'
+			});
+		} */
+
+		// Validar el password
+		/* const validPassword = bcrypt.compareSync(password, usuarioDB.password);
+		if (!validPassword) {
+			return res.status(400).json({
+				ok: false,
+				msg: 'La contraseña no es valida'
+			});
+		} */
+
+		// Generar el JWT
+		/* const token = await generarJWT(usuarioDB.id); */
+
+		res.json({
+			ok: true,
+			usuario: userFire,
+			token
+		});
+	} catch (error) {
+		console.log(error);
+		return res.status(500).json({
+			ok: false,
+			msg: 'Hable con el administrador'
+		});
+	}
+};
+
 const renewToken = async (req, res = response) => {
 	const uid = req.uid;
 
@@ -117,5 +161,6 @@ module.exports = {
 	crearUsuario,
 	login,
 	renewToken,
-	googleAuth
+	googleAuth,
+	loginFirebase
 };
