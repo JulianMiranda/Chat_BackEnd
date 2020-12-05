@@ -147,14 +147,39 @@ const googleAuth = async (req, res = response) => {
 		return res.json({ok: false, msg: 'Invalid Token'});
 	}
 	const googleUser = await validarIdToken(token);
-	console.log(googleUser);
+
 	if (!googleUser) {
 		return res.status(400).json({ok: false});
 	}
-	res.json({
-		ok: true,
-		googleUser
-	});
+	const emailGoogle = googleUser.email;
+
+	const existeEmail = await Usuario.findOne({email: emailGoogle});
+
+	if (existeEmail) {
+		res.json({
+			ok: true,
+			usuario: existeEmail,
+			token
+		});
+	} else {
+		const user = {
+			nombre: googleUser.name,
+			email: googleUser.email,
+			password: 'googleUser'
+		};
+		const usuario = new Usuario(user);
+
+		/* const salt = bcrypt.genSaltSync();
+		usuario.password = bcrypt.hashSync(password, salt); */
+
+		await usuario.save();
+		const myToken = await generarJWT(usuario.id);
+		res.json({
+			ok: true,
+			usuario,
+			token: myToken
+		});
+	}
 };
 
 module.exports = {
